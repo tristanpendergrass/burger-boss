@@ -27,7 +27,10 @@
     "clean-prod-mac": "rm -rf docs .cache",
     "build": "npm-run-all -s clean-prod-windows parcel:build",
     "start": "npm-run-all -s clean-dev-windows -p parcel:serve",
-    "build-mac": "npm-run-all -s clean-prod-mac postcss:build parcel:build",
-    "start-mac": "npm-run-all -s clean-dev-mac -p postcss:watch parcel:serve"
+    "build-mac": "npm-run-all -s clean-prod-mac parcel:build",
+    "start-mac": "npm-run-all -s clean-dev-mac -p parcel:serve"
+  },
+  "dependencies": {
+    "elm-format": "^0.8.7"
   }
 }
