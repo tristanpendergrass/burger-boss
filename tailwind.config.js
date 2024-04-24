@@ -1,7 +1,11 @@
 module.exports = {
   content: ["./src/**/*.{html,js,jsx,ts,tsx,elm}"],
   theme: {
-    extend: {},
+    extend: {
+      transitionProperty: {
+        'height': 'height',
+      }
+    },
   },
-  plugins: [],
+  plugins: ["@tailwindcss/typography"],
 }
