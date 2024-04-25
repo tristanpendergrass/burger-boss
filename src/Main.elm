@@ -163,8 +163,8 @@ getScore doneness progress =
     if
         progressPercent
             >= (startPercent
-                    -- We add this adjustment to account for the width of the burger image. Janky but mostly works.
-                    - 7
+                    -- We add this adjustment to account for the width of the burger image which is set at 5%
+                    - 8
                )
             && progressPercent
             < endPercent
@@ -544,7 +544,7 @@ columnClass =
 
 buttonClass : Html.Attribute Msg
 buttonClass =
-    class "py-1 px-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 border border-black rounded-sm"
+    class "py-1 px-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 border border-black rounded-sm text-sm"
 
 
 renderStation : Bool -> Int -> StationState -> Html Msg
@@ -626,7 +626,7 @@ renderCookingState jetsOn doneness progress =
     div [ class "w-full h-full relative overflow-hidden", stationBgClass ]
         -- renderDoneness
         [ div
-            [ class "h-full absolute text-gray-100 flex items-center justify-center"
+            [ class "h-full absolute text-gray-100 flex items-center justify-center text-sm"
             , donenessBgClass
             , style "left" donenessLeftStyle
             , style "width" donenessWidthStyle
@@ -635,13 +635,18 @@ renderCookingState jetsOn doneness progress =
 
         -- Render progress
         , img
-            [ class "absolute z-1 w-16"
+            [ class "absolute z-1 w-[8%]"
             , style "left" progressStyleLeft
-            , style "top" "5px"
-            , src "Patty2.png"
+            , style "top" "50%"
+            , style "transform" "translateY(-50%)"
+            , src "Patty3.png"
             ]
             []
         ]
+
+
+onDownStopPropagation =
+    Pointer.onWithOptions "down" { stopPropagation = True, preventDefault = False }
 
 
 renderStationButton : Int -> StationState -> Html Msg
@@ -656,13 +661,13 @@ renderStationButton index stationState =
             div [] []
 
         ReadyToStart doneness ->
-            button [ buttonClass, Pointer.onDown (\_ -> StartStation index) ] [ text "Start ", shortcutText ]
+            button [ buttonClass, onDownStopPropagation (\_ -> StartStation index) ] [ text "Start ", shortcutText ]
 
         Cooking doneness progress ->
-            button [ buttonClass, Pointer.onDown (\_ -> ServeStation index) ] [ text "Serve ", shortcutText ]
+            button [ buttonClass, onDownStopPropagation (\_ -> ServeStation index) ] [ text "Serve ", shortcutText ]
 
         Burnt ->
-            button [ buttonClass, Pointer.onDown (\_ -> TossStation index) ] [ text "Toss ", shortcutText ]
+            button [ buttonClass, onDownStopPropagation (\_ -> TossStation index) ] [ text "Toss ", shortcutText ]
 
 
 renderShortcut : String -> Html Msg
@@ -731,7 +736,7 @@ view model =
                         , div [ class "w-full flex gap-12 items-center justify-center h-16" ]
                             [ flames1 gameState
                             , button
-                                [ Pointer.onDown (\_ -> HandleJetsOn)
+                                [ onDownStopPropagation (\_ -> HandleJetsOn)
                                 , Pointer.onUp (\_ -> HandleJetsOff)
                                 , Pointer.onOut (\_ -> HandleJetsOff)
                                 , buttonClass
