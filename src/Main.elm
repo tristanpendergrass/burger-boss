@@ -736,8 +736,8 @@ view model =
                         , div [ class "w-full flex gap-12 items-center justify-center h-16" ]
                             [ flames1 gameState
                             , button
-                                [ onDownStopPropagation (\_ -> HandleJetsOn)
-                                , Pointer.onUp (\_ -> HandleJetsOff)
+                                [ Pointer.onWithOptions "down" { stopPropagation = False, preventDefault = True } (\_ -> HandleJetsOn)
+                                , Pointer.onWithOptions "up" { stopPropagation = False, preventDefault = True } (\_ -> HandleJetsOff)
                                 , Pointer.onOut (\_ -> HandleJetsOff)
                                 , buttonClass
                                 , class "bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-300"
