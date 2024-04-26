@@ -18,10 +18,15 @@ $ npm run build
 # Todos
 
 [x] Art for burger
-[ ] Art for jets
-[ ] Art for closed shop
-[ ] Make game "Main menu" state with instructions and high scores
-[ ] Make game "over" state with score and retry button
-[ ] Improve styles of timer and burger score on right
-[ ] Store high scores in local storage
+[x] Art for jets
+[x] Art for closed shop
+[x] Make game "Main menu" state
+[x] Make game "over" state with score and retry button
+[x] Display score on end screen (and par)
+[ ] Add high scores with local storage displayed on main menu
+[ ] Add How to Play
+[x] Improve styles of timer and burger score on right
+[ ] Make burgers change color as they move
+
+## Bonus
 [ ] Difficulty levels

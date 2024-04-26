@@ -2,6 +2,7 @@
   "devDependencies": {
     "@parcel/transformer-elm": "^2.0.0-rc.0",
     "@parcel/transformer-image": "^2.0.0-rc.0",
+    "@tailwindcss/typography": "^0.5.12",
     "autoprefixer": "^10.4.2",
     "cssnano": "^4.1.10",
     "daisyui": "^4.10.2",

@@ -77,6 +77,7 @@ type State
 type alias Model =
     { seed : Random.Seed
     , state : State
+    , showHowToPlay : Bool
     }
 
 
@@ -92,6 +93,7 @@ init : Int -> ( Model, Cmd Msg )
 init randomInt =
     ( { seed = Random.initialSeed randomInt
       , state = MainMenu
+      , showHowToPlay = False
       }
     , Cmd.none
     )
@@ -131,6 +133,9 @@ type Msg
     | HandleStartGameClick
     | HandleMainMenuClick
     | HandleStationClick Int
+    | HandleHowToPlayClick
+    | HandleCloseHowToPlay
+    | HandleCloseEarlyClick
 
 
 updateIndex : (a -> a) -> Int -> List a -> List a
@@ -423,6 +428,20 @@ update msg model =
         HandleMainMenuClick ->
             ( { model | state = MainMenu }, Cmd.none )
 
+        HandleHowToPlayClick ->
+            ( { model | showHowToPlay = True }, Cmd.none )
+
+        HandleCloseHowToPlay ->
+            ( { model | showHowToPlay = False }, Cmd.none )
+
+        HandleCloseEarlyClick ->
+            case model.state of
+                InGame gameState ->
+                    ( { model | state = GameOver gameState.score }, Cmd.none )
+
+                _ ->
+                    noOp
+
 
 
 -- SUBSCRIPTIONS
@@ -711,10 +730,26 @@ flames2 gameState =
         ]
 
 
+renderHowToPlay : Model -> Html Msg
+renderHowToPlay model =
+    div
+        [ classList [ ( "hidden", not model.showHowToPlay ) ]
+        , class "fixed top-0 left-0 bg-white bg-opacity-50 w-screen h-screen flex items-center justify-center"
+        , Pointer.onDown (\_ -> HandleCloseHowToPlay)
+        ]
+        [ div
+            [ class "prose bg-white border border-gray-900 rounded max-h-[90%] overflow-auto p-16"
+            , columnClass
+            , onDownStopPropagation (\_ -> NoOp)
+            ]
+            [ h1 [] [ text "Burger Rules" ] ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div [ columnClass, class "w-full p-10" ]
-        [ div [ class "flex items-center w-full" ] [ span [ class "text-2xl" ] [ text "Burger Boss" ] ]
+        [ div [ class "flex items-center w-full" ] [ span [ class "text-3xl font-bold" ] [ text "Burger Boss" ] ]
         , div [ class "flex gap-1 w-full" ]
             [ let
                 leftSideClass : Attribute Msg
@@ -777,6 +812,12 @@ view model =
                             [ span [] [ text "(Par:" ]
                             , span [] [ text "12)" ]
                             ]
+                        , button
+                            [ buttonClass
+                            , class "bg-red-300 hover:bg-red-200"
+                            , Pointer.onDown (\_ -> HandleCloseEarlyClick)
+                            ]
+                            [ text "Close early" ]
                         , div [ columnClass, class "w-full border-t border-black mt-24" ]
                             [ div [] [ text "Keyboard Shortcuts" ]
                             , div []
@@ -804,17 +845,33 @@ view model =
                             , div []
                                 [ renderShortcut "Space"
                                 , span []
-                                    [ text ": Toggle Jets"
+                                    [ text ": Activate Jets!"
                                     ]
                                 ]
                             ]
                         ]
 
                 MainMenu ->
-                    div [ columnClass, rightSideClass ] [ button [ buttonClass, Pointer.onDown (\_ -> HandleStartGameClick) ] [ text "New Game" ] ]
-
-                GameOver _ ->
                     div [ columnClass, rightSideClass ]
-                        [ button [ buttonClass, Pointer.onDown (\_ -> HandleMainMenuClick) ] [ text "Main Menu" ] ]
+                        [ button
+                            [ buttonClass
+                            , class "bg-green-300 hover:bg-green-200 active:bg-green-100"
+                            , Pointer.onDown (\_ -> HandleStartGameClick)
+                            ]
+                            [ text "New Game" ]
+                        , button
+                            [ buttonClass
+                            , Pointer.onDown (\_ -> HandleHowToPlayClick)
+                            ]
+                            [ text "How to play" ]
+                        , renderHowToPlay model
+                        ]
+
+                GameOver score ->
+                    div [ columnClass, rightSideClass, class "gap-6" ]
+                        [ h2 [ class "font-semibold text-2xl leading-none" ] [ text "Burgers served" ]
+                        , h2 [ class "font-semibold text-2xl leading-none" ] [ text (String.fromInt score) ]
+                        , button [ buttonClass, Pointer.onDown (\_ -> HandleMainMenuClick) ] [ text "Main Menu" ]
+                        ]
             ]
         ]
