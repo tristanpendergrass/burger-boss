@@ -23,10 +23,9 @@ $ npm run build
 [x] Make game "Main menu" state
 [x] Make game "over" state with score and retry button
 [x] Display score on end screen (and par)
-[ ] Add high scores with local storage displayed on main menu
-[ ] Add How to Play
+[x] Add high scores with local storage displayed on main menu
 [x] Improve styles of timer and burger score on right
-[ ] Make burgers change color as they move
 
 ## Bonus
 [ ] Difficulty levels
+[ ] Add How to Play

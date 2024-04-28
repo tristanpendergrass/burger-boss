@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Browser.Events
@@ -7,11 +7,19 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Events.Extra.Pointer as Pointer
 import Json.Decode as D
+import Json.Encode as E
 import List
 import Random
 
 
-main : Program Int Model Msg
+port saveScores : E.Value -> Cmd msg
+
+
+type alias Flags =
+    { initialSeed : Int, highScores : List Int }
+
+
+main : Program Flags Model Msg
 main =
     Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
@@ -78,6 +86,7 @@ type alias Model =
     { seed : Random.Seed
     , state : State
     , showHowToPlay : Bool
+    , highScores : List Int
     }
 
 
@@ -89,11 +98,12 @@ emptyStationGenerator =
         (Random.uniform Rare [ Medium, WellDone ])
 
 
-init : Int -> ( Model, Cmd Msg )
-init randomInt =
-    ( { seed = Random.initialSeed randomInt
+init : Flags -> ( Model, Cmd Msg )
+init { initialSeed, highScores } =
+    ( { seed = Random.initialSeed initialSeed
       , state = MainMenu
       , showHowToPlay = False
+      , highScores = highScores
       }
     , Cmd.none
     )
@@ -228,6 +238,21 @@ handleStationDelta jetsOn delta stationState =
             stationState
 
 
+updateHighScores : Int -> List Int -> ( List Int, Cmd Msg )
+updateHighScores score highScores =
+    let
+        newHighScores : List Int
+        newHighScores =
+            score :: highScores
+    in
+    ( newHighScores, saveHighScores newHighScores )
+
+
+saveHighScores : List Int -> Cmd msg
+saveHighScores scores =
+    saveScores <| E.list E.int scores
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -250,7 +275,11 @@ update msg model =
                             gameState.endTimer - delta
                     in
                     if newEndTimer <= 0 then
-                        ( { model | state = GameOver gameState.score }, Cmd.none )
+                        let
+                            ( newHighScores, updateHighScoresCmd ) =
+                                updateHighScores gameState.score model.highScores
+                        in
+                        ( { model | state = GameOver gameState.score, highScores = newHighScores }, updateHighScoresCmd )
 
                     else
                         ( { model
@@ -437,7 +466,11 @@ update msg model =
         HandleCloseEarlyClick ->
             case model.state of
                 InGame gameState ->
-                    ( { model | state = GameOver gameState.score }, Cmd.none )
+                    let
+                        ( newHighScores, updateHighScoresCmd ) =
+                            updateHighScores gameState.score model.highScores
+                    in
+                    ( { model | state = GameOver gameState.score, highScores = newHighScores }, updateHighScoresCmd )
 
                 _ ->
                     noOp
@@ -665,7 +698,7 @@ renderCookingState jetsOn doneness progress =
 
 
 onDownStopPropagation =
-    Pointer.onWithOptions "down" { stopPropagation = True, preventDefault = False }
+    Pointer.onWithOptions "pointerdown" { stopPropagation = True, preventDefault = False }
 
 
 renderStationButton : Int -> StationState -> Html Msg
@@ -734,16 +767,23 @@ renderHowToPlay : Model -> Html Msg
 renderHowToPlay model =
     div
         [ classList [ ( "hidden", not model.showHowToPlay ) ]
-        , class "fixed top-0 left-0 bg-white bg-opacity-50 w-screen h-screen flex items-center justify-center"
+        , class "fixed top-0 left-0 bg-white bg-opacity-50 w-screen h-screen flex items-start justify-center p-16"
         , Pointer.onDown (\_ -> HandleCloseHowToPlay)
         ]
         [ div
-            [ class "prose bg-white border border-gray-900 rounded max-h-[90%] overflow-auto p-16"
+            [ class "prose bg-white border border-gray-900 rounded max-h-[90%] overflow-auto p-16 shadow-xl relative max-w-[90%]"
             , columnClass
-            , onDownStopPropagation (\_ -> NoOp)
+            , Pointer.onWithOptions "pointerdown" { stopPropagation = True, preventDefault = False } (\_ -> NoOp)
             ]
-            [ h1 [] [ text "Burger Rules" ] ]
+            [ h1 [] [ text "Burger Rules" ]
+            , button [ buttonClass, onDownStopPropagation (\_ -> HandleCloseHowToPlay) ] [ text "Close" ]
+            ]
         ]
+
+
+renderHighScore : ( String, Int ) -> Html Msg
+renderHighScore ( name, score ) =
+    tr [] [ td [ class "uppercase font-semibold" ] [ text name ], td [] [ text (String.fromInt score) ] ]
 
 
 view : Model -> Html Msg
@@ -771,8 +811,8 @@ view model =
                         , div [ class "w-full flex gap-12 items-center justify-center h-16" ]
                             [ flames1 gameState
                             , button
-                                [ Pointer.onWithOptions "down" { stopPropagation = False, preventDefault = True } (\_ -> HandleJetsOn)
-                                , Pointer.onWithOptions "up" { stopPropagation = False, preventDefault = True } (\_ -> HandleJetsOff)
+                                [ Pointer.onWithOptions "pointerdown" { stopPropagation = False, preventDefault = True } (\_ -> HandleJetsOn)
+                                , Pointer.onWithOptions "pointerup" { stopPropagation = False, preventDefault = True } (\_ -> HandleJetsOff)
                                 , Pointer.onOut (\_ -> HandleJetsOff)
                                 , buttonClass
                                 , class "bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-300"
@@ -800,17 +840,9 @@ view model =
               case model.state of
                 InGame gameState ->
                     div [ columnClass, rightSideClass ]
-                        [ div [ class "flex items-center gap-1" ]
+                        [ div [ class "flex items-center gap-1 text-xl border border-gray-900 px-4 py-2" ]
                             [ div [] [ text "Day timer:" ]
                             , div [] [ text (String.fromInt (Basics.max 0 (floor (gameState.endTimer / 1000)))) ]
-                            ]
-                        , div [ class "flex items-center gap-1" ]
-                            [ span [] [ text "Burgers served:" ]
-                            , span [] [ text (String.fromInt gameState.score) ]
-                            ]
-                        , div [ class "flex items-center gap-1 text-sm" ]
-                            [ span [] [ text "(Par:" ]
-                            , span [] [ text "12)" ]
                             ]
                         , button
                             [ buttonClass
@@ -852,18 +884,32 @@ view model =
                         ]
 
                 MainMenu ->
-                    div [ columnClass, rightSideClass ]
+                    div [ columnClass, rightSideClass, class "gap-8" ]
                         [ button
                             [ buttonClass
                             , class "bg-green-300 hover:bg-green-200 active:bg-green-100"
                             , Pointer.onDown (\_ -> HandleStartGameClick)
                             ]
                             [ text "New Game" ]
-                        , button
-                            [ buttonClass
-                            , Pointer.onDown (\_ -> HandleHowToPlayClick)
+                        , hr [ class "w-full text-gray-900" ] []
+                        , div [ class "prose prose-sm md:prose-base" ]
+                            [ h2 [] [ text "Top Burger Bosses" ]
+                            , table []
+                                (model.highScores
+                                    |> List.map (\score -> ( "you", score ))
+                                    |> List.append [ ( "Baffi", 2 ), ( "Bambi", 3 ), ( "Lv Bu", 10 ) ]
+                                    |> List.sortBy Tuple.second
+                                    |> List.reverse
+                                    |> List.take 10
+                                    |> List.map renderHighScore
+                                )
                             ]
-                            [ text "How to play" ]
+
+                        -- , button
+                        --     [ buttonClass
+                        --     , Pointer.onDown (\_ -> HandleHowToPlayClick)
+                        --     ]
+                        --     [ text "How to play" ]
                         , renderHowToPlay model
                         ]
 
