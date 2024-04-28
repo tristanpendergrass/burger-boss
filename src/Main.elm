@@ -94,7 +94,7 @@ emptyStationGenerator : Random.Generator StationState
 emptyStationGenerator =
     Random.map2
         Empty
-        (Random.uniform 1000 [ 1200, 1400, 1600, 1800, 2000 ])
+        (Random.uniform 2000 [ 2200, 2400, 2600, 2800, 3000 ])
         (Random.uniform Rare [ Medium, WellDone ])
 
 
@@ -936,7 +936,7 @@ view model =
                             , table []
                                 (model.highScores
                                     |> List.map (\score -> ( "you", score ))
-                                    |> List.append [ ( "Baffi", 5 ), ( "Bambi", 20 ), ( "Lv Bu", 25 ) ]
+                                    |> List.append [ ( "Baffi", 12 ), ( "Bambi", 26 ), ( "Lv Bu", 35 ) ]
                                     |> List.sortBy Tuple.second
                                     |> List.reverse
                                     |> List.take 10
