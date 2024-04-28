@@ -771,12 +771,18 @@ renderHowToPlay model =
         , Pointer.onDown (\_ -> HandleCloseHowToPlay)
         ]
         [ div
-            [ class "prose bg-white border border-gray-900 rounded max-h-[90%] overflow-auto p-16 shadow-xl relative max-w-[90%]"
-            , columnClass
+            [ columnClass
+            , class "prose bg-white border border-gray-900 rounded max-h-[90%] overflow-auto p-16 shadow-xl relative max-w-[90%]"
             , Pointer.onWithOptions "pointerdown" { stopPropagation = True, preventDefault = False } (\_ -> NoOp)
             ]
-            [ h1 [] [ text "Burger Rules" ]
-            , button [ buttonClass, onDownStopPropagation (\_ -> HandleCloseHowToPlay) ] [ text "Close" ]
+            [ h1 [] [ text "Credits" ]
+            , p [ class "italic" ] [ text "This game is dedicated to my Mom. Happy Birthday!" ]
+            , p [] [ text "Game design and development: Tristan" ]
+            , p [] [ text "Supplemental art: Yang" ]
+            , div [ class "bg-sky-200 rounded-xl relative" ]
+                [ img [ src "pup_transparent.png", alt "Confused Dog", width 400 ] []
+                ]
+            , button [ buttonClass, class "mt-8", onDownStopPropagation (\_ -> HandleCloseHowToPlay) ] [ text "Close" ]
             ]
         ]
 
@@ -786,10 +792,37 @@ renderHighScore ( name, score ) =
     tr [] [ td [ class "uppercase font-semibold" ] [ text name ], td [] [ text (String.fromInt score) ] ]
 
 
+renderBirthday : Html Msg
+renderBirthday =
+    span [ class "flex items-center gap-2 text-3xl font-bold bg-sky-200 px-2 py-1 rounded" ]
+        [ span [ class "text-red-500" ] [ text "B" ]
+        , span [ class "text-blue-500" ] [ text "i" ]
+        , span [ class "text-green-500" ] [ text "r" ]
+        , span [ class "text-yellow-500" ] [ text "t" ]
+        , span [ class "text-purple-500" ] [ text "h" ]
+        , span [ class "text-red-500" ] [ text "d" ]
+        , span [ class "text-blue-500" ] [ text "a" ]
+        , span [ class "text-green-500" ] [ text "y" ]
+        , span [ class "text-yellow-500" ] [ text " " ]
+        , span [ class "text-purple-500" ] [ text "E" ]
+        , span [ class "text-red-500" ] [ text "d" ]
+        , span [ class "text-blue-500" ] [ text "i" ]
+        , span [ class "text-green-500" ] [ text "t" ]
+        , span [ class "text-yellow-500" ] [ text "i" ]
+        , span [ class "text-purple-500" ] [ text "o" ]
+        , span [ class "text-red-500" ] [ text "n" ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div [ columnClass, class "w-full p-10" ]
-        [ div [ class "flex items-center w-full" ] [ span [ class "text-3xl font-bold" ] [ text "Burger Boss" ] ]
+        [ div [ class "w-full" ]
+            [ div [ class "flex items-center justify-between w-1/2" ]
+                [ span [ class "text-3xl font-bold" ] [ text "Burger Boss" ]
+                , renderBirthday
+                ]
+            ]
         , div [ class "flex gap-1 w-full" ]
             [ let
                 leftSideClass : Attribute Msg
@@ -891,6 +924,12 @@ view model =
                             , Pointer.onDown (\_ -> HandleStartGameClick)
                             ]
                             [ text "New Game" ]
+                        , button
+                            [ buttonClass
+                            , Pointer.onDown (\_ -> HandleHowToPlayClick)
+                            ]
+                            [ text "Credits" ]
+                        , renderHowToPlay model
                         , hr [ class "w-full text-gray-900" ] []
                         , div [ class "prose prose-sm md:prose-base" ]
                             [ h2 [] [ text "Top Burger Bosses" ]
@@ -904,13 +943,6 @@ view model =
                                     |> List.map renderHighScore
                                 )
                             ]
-
-                        -- , button
-                        --     [ buttonClass
-                        --     , Pointer.onDown (\_ -> HandleHowToPlayClick)
-                        --     ]
-                        --     [ text "How to play" ]
-                        , renderHowToPlay model
                         ]
 
                 GameOver score ->
