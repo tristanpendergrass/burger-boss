@@ -936,7 +936,7 @@ view model =
                             , table []
                                 (model.highScores
                                     |> List.map (\score -> ( "you", score ))
-                                    |> List.append [ ( "Baffi", 5 ), ( "Bambi", 15 ), ( "Lv Bu", 20 ) ]
+                                    |> List.append [ ( "Baffi", 5 ), ( "Bambi", 20 ), ( "Lv Bu", 25 ) ]
                                     |> List.sortBy Tuple.second
                                     |> List.reverse
                                     |> List.take 10
