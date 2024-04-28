@@ -596,7 +596,7 @@ columnClass =
 
 buttonClass : Html.Attribute Msg
 buttonClass =
-    class "py-1 px-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 border border-black rounded-sm text-sm"
+    class "py-1 px-2 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 border border-black rounded-sm text-sm select-none"
 
 
 renderStation : Bool -> Int -> StationState -> Html Msg
@@ -936,7 +936,7 @@ view model =
                             , table []
                                 (model.highScores
                                     |> List.map (\score -> ( "you", score ))
-                                    |> List.append [ ( "Baffi", 2 ), ( "Bambi", 3 ), ( "Lv Bu", 10 ) ]
+                                    |> List.append [ ( "Baffi", 5 ), ( "Bambi", 15 ), ( "Lv Bu", 20 ) ]
                                     |> List.sortBy Tuple.second
                                     |> List.reverse
                                     |> List.take 10
