@@ -111,7 +111,7 @@ init { initialSeed, highScores } =
 
 gameDuration : Float
 gameDuration =
-    300 * 1000
+    60 * 1000
 
 
 gameStateGenerator : Random.Generator GameState
